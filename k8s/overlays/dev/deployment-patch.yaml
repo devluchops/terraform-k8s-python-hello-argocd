@@ -4,7 +4,7 @@ metadata:
   name: python-hello-world
   namespace: demo
 spec:
-  replicas: 2
+  replicas: 1
   template:
     spec:
       containers:
@@ -14,8 +14,8 @@ spec:
           value: "dev"
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
             memory: "128Mi"
             cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
