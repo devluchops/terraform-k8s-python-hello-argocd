@@ -50,7 +50,7 @@ update-ecr: ## Update ECR URLs in Kustomize overlays
 	echo "✅ ECR URLs updated successfully!"
 
 .PHONY: init
-init: ## Initialize Terraform
+init: setup-bucket ## Initialize Terraform (creates S3 bucket if needed)
 	@cd $(TERRAFORM_DIR) && terraform init -backend-config=backend-config.hcl
 
 .PHONY: plan
@@ -62,8 +62,35 @@ deploy: ## Deploy infrastructure
 	@cd $(TERRAFORM_DIR) && terraform apply $(TFVARS_ARG) -auto-approve
 
 .PHONY: destroy
-destroy: ## Destroy infrastructure
-	@cd $(TERRAFORM_DIR) && terraform destroy $(TFVARS_ARG) -auto-approve
+destroy: ## Destroy ALL resources including S3 bucket
+	@echo "🗑️  Destroying ALL resources..."
+	@echo "⚠️  This will remove EVERYTHING including S3 bucket!"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "🔄 Removing ArgoCD from Terraform state..."
+	@cd $(TERRAFORM_DIR) && terraform state rm helm_release.argocd 2>/dev/null || true
+	@echo "🗑️  Force deleting ECR repository with images..."
+	@aws ecr delete-repository --repository-name python-hello-world --region $(AWS_REGION) --force 2>/dev/null || echo "ℹ️  ECR repository not found or already deleted"
+	@echo "🔄 Destroying Terraform infrastructure..."
+	@cd $(TERRAFORM_DIR) && terraform destroy $(TFVARS_ARG) -auto-approve -refresh=false
+	@echo "🪣 Emptying and deleting S3 bucket..."
+	@BUCKET_NAME="gitops-demo-terraform-state-2025"; \
+	if aws s3 ls "s3://$$BUCKET_NAME" 2>/dev/null; then \
+		echo "📦 Emptying bucket $$BUCKET_NAME..."; \
+		aws s3 rm "s3://$$BUCKET_NAME" --recursive 2>/dev/null || true; \
+		echo "🗑️  Deleting bucket $$BUCKET_NAME..."; \
+		aws s3 rb "s3://$$BUCKET_NAME" --force 2>/dev/null || true; \
+		echo "✅ S3 bucket deleted"; \
+	else \
+		echo "ℹ️  S3 bucket $$BUCKET_NAME not found"; \
+	fi
+
+	@echo "🧹 Cleaning up local files..."
+	@rm -rf $(TERRAFORM_DIR)/.terraform 2>/dev/null || true
+	@rm -f $(TERRAFORM_DIR)/.terraform.lock.hcl 2>/dev/null || true
+	@echo "✅ Complete destruction finished!"
+	@echo "🔍 Verifying cleanup..."
+	@echo "EKS Clusters:" && aws eks list-clusters --region $(AWS_REGION) --query 'clusters' --output table || true
+	@echo "Load Balancers:" && aws elbv2 describe-load-balancers --region $(AWS_REGION) --query 'LoadBalancers[].LoadBalancerName' --output table || true
 
 .PHONY: kubectl
 kubectl: ## Configure kubectl
