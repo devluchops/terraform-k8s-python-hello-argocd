@@ -5,6 +5,8 @@ metadata:
   namespace: demo
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/healthcheck-path: "/health"
 spec:
   ingressClassName: nginx
   rules:
