@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: python-hello-world
+  namespace: demo
 spec:
   replicas: 3
   template:
@@ -16,5 +17,5 @@ spec:
             memory: "128Mi"
             cpu: "100m"
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "512Mi"
+            cpu: "250m"

@@ -14,5 +14,5 @@ commonLabels:
 
 images:
 - name: python-hello-world
-  newName: 292967571313.dkr.ecr.us-east-1.amazonaws.com/python-hello-world
+  newName: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/python-hello-world
   newTag: latest

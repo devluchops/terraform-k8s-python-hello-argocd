@@ -1,0 +1,16 @@
+# Terraform variable files
+terraform/terraform.tfvars
+terraform/*.tfvars
+!terraform/*.tfvars.example
+!terraform/prod.tfvars
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+
+# Backend configuration
+terraform/backend-config.hcl
