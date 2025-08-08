@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-hello-world
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: python-hello-world
+        env:
+        - name: ENVIRONMENT
+          value: "dev"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
