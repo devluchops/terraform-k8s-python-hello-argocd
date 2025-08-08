@@ -13,10 +13,18 @@ spec:
       parameters:
       - name: clusterName
         value: gitops-demo
+      - name: region
+        value: us-east-1
+      - name: vpcId
+        value: vpc-008eb664931d9a151
       - name: serviceAccount.create
         value: "true"
       - name: serviceAccount.name
         value: aws-load-balancer-controller
+      values: |
+        serviceAccount:
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::292967571313:role/gitops-demo-alb-controller
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
